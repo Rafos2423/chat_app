@@ -3,6 +3,7 @@
 // Импортируем необходимые пакеты
 import 'package:chatmessengerapp/components/my_button.dart'; // Пользовательский виджет кнопки
 import 'package:chatmessengerapp/components/my_text_field.dart'; // Пользовательский виджет текстового поля
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // Основной пакет виджетов и стилей Flutter
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart'; // Пакет для управления состоянием приложения через Provider
@@ -48,6 +49,26 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e.toString() // Преобразуем ошибку в строку и отображаем
               )));
+    }
+  }
+
+  signInWithGoogle() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
+      final GoogleSignInAuthentication gAuth = await gUser!.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: gAuth.accessToken,
+        idToken: gAuth.idToken,
+      );
+
+      await authService.signInWithCredential(credential);
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -157,7 +178,23 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ],
-                      )
+                      ),
+                      SizedBox(height: 100),
+                      GestureDetector(
+                        onTap: () => signInWithGoogle(),
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white),
+                            borderRadius: BorderRadius.circular(16),
+                            color: Colors.grey[200],
+                          ),
+                          child: Image.asset(
+                            'assets/google.png',
+                            height: 40,
+                          ), 
+                        ),
+                      ),
                     ],
                   ),
                 ),

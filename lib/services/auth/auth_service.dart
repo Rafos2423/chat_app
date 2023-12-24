@@ -11,12 +11,13 @@ class AuthService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Функция для входа пользователя через email и пароль.
-  Future<UserCredential> signInWithEmailandPassword(String email, String password) async {
+  Future<UserCredential> signInWithEmailandPassword(
+      String email, String password) async {
     try {
       // Аутентификация пользователя с использованием email и пароля.
-      UserCredential userCredential = 
-        await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      
+      UserCredential userCredential = await _firebaseAuth
+          .signInWithEmailAndPassword(email: email, password: password);
+
       // Если пользователь вошел в систему, то в коллекции 'users' в Firestore создается документ для пользователя,
       // если документ не существует. Данные объединяются с существующими (если таковые есть).
       _firestore.collection('users').doc(userCredential.user!.uid).set({
@@ -25,8 +26,8 @@ class AuthService extends ChangeNotifier {
       }, SetOptions(merge: true));
 
       // Возвращается объект с данными о пользовательской учетной записи.
-      return userCredential; 
-    } 
+      return userCredential;
+    }
     // Обработка ошибок аутентификации Firebase.
     on FirebaseAuthException catch (e) {
       throw Exception(e.code); // Выбрасывание исключения с кодом ошибки.
@@ -34,12 +35,13 @@ class AuthService extends ChangeNotifier {
   }
 
   // Функция для регистрации пользователя через email и пароль.
-  Future<UserCredential> signUpWithEmailandPassword(String email, String password) async {
+  Future<UserCredential> signUpWithEmailandPassword(
+      String email, String password) async {
     try {
       // Создание новой учетной записи пользователя с использованием email и пароля.
-      UserCredential userCredential = 
-        await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      
+      UserCredential userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password);
+
       // После создания пользователя в коллекции 'users' в Firestore создается документ для пользователя.
       _firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
@@ -50,13 +52,39 @@ class AuthService extends ChangeNotifier {
       return userCredential;
     }
     // Обработка ошибок аутентификации Firebase.
-    on FirebaseAuthException catch(e) {
+    on FirebaseAuthException catch (e) {
+      throw Exception(e.code); // Выбрасывание исключения с кодом ошибки.
+    }
+  }
+
+  Future<UserCredential> signInWithCredential(AuthCredential credential) async {
+    try {
+      // Аутентификация пользователя с использованием учетных данных.
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Если пользователь вошел в систему, то в коллекции 'users' в Firestore создается документ для пользователя,
+      // если документ не существует. Данные объединяются с существующими (если таковые есть).
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'uid': userCredential.user!.uid,
+        'email': userCredential.user!.email,
+      }, SetOptions(merge: true));
+
+      // Возвращается объект с данными о пользовательской учетной записи.
+      return userCredential;
+    }
+    // Обработка ошибок аутентификации Firebase.
+    on FirebaseAuthException catch (e) {
       throw Exception(e.code); // Выбрасывание исключения с кодом ошибки.
     }
   }
 
   // Функция для выхода пользователя из системы.
   Future<void> signOut() async {
-    return await FirebaseAuth.instance.signOut(); // Выход пользователя из учетной записи.
+    return await FirebaseAuth.instance
+        .signOut(); // Выход пользователя из учетной записи.
   }
 }
