@@ -2,7 +2,10 @@ import 'package:chatmessengerapp/components/chat_bubble.dart'; // Подключ
 import 'package:chatmessengerapp/services/chat/chat_service.dart'; // Подключение сервиса чата
 import 'package:cloud_firestore/cloud_firestore.dart'; // Подключение Firestore для работы с базой данных в режиме реального времени
 import 'package:firebase_auth/firebase_auth.dart'; // Подключение Firebase Auth для аутентификации пользователей
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 import '../components/my_text_field.dart'; // Подключение кастомного текстового поля
 
@@ -23,7 +26,7 @@ class _ChatPageState extends State<ChatPage> { // Класс состояния 
   final TextEditingController _messageController = TextEditingController(); // Контроллер для управления текстовым полем
   final ChatService _chatService = ChatService(); // Экземпляр сервиса чата для отправки и получения сообщений
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // Экземпляр для работы с аутентификацией Firebase
-
+  final FirebaseStorage storage = FirebaseStorage.instance;
   bool _isRecordingAudio = false; // Флаг для проверки, идет ли запись аудио
   bool _isSendingVideo = false; // Флаг для проверки, отправляется ли видео
 
@@ -38,6 +41,22 @@ class _ChatPageState extends State<ChatPage> { // Класс состояния 
           widget.reciveUserID, _messageController.text); // Отправка сообщения через chatService
       _messageController.clear(); // Очистка текстового поля после отправки сообщения
     }
+  }
+
+  void sendImageMessage() async
+  {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    File file = File(image.path);
+    String fileName =
+        'images/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+    Reference ref = storage.ref().child(fileName);
+    UploadTask uploadTask = ref.putFile(file);
+    await uploadTask;
+    String imageUrl = await ref.getDownloadURL();
+    await _chatService.sendMessage(widget.reciveUserID, imageUrl);
+    _messageController.clear();
   }
  
 
@@ -158,6 +177,7 @@ Widget _buildMessageItem(DocumentSnapshot document) {
 }
 
 
+
   // Функция создания виджета для поля ввода сообщений
   Widget _buildMessageInput() {
    
@@ -178,29 +198,12 @@ Widget _buildMessageItem(DocumentSnapshot document) {
         Padding(
           padding: const EdgeInsets.only(bottom: 13, left: 5), // Отступы для кнопки
           child: IconButton(
-            onPressed: () {
-              setState(() {
-                // Переключаем режими: если записываем аудио, то переключаемся на видео и наоборот
-                if (_isRecordingAudio) {
-                  _isRecordingAudio = false;
-                  _isSendingVideo = true;
-                } else {
-                  _isRecordingAudio = true;
-                  _isSendingVideo = false;
-                }
-              });
-            },
-            icon: _isRecordingAudio
-                ? Icon(
-                    Icons.videocam_outlined, // Если идет запись аудио, показываем иконку видеокамеры
+            onPressed: sendImageMessage,
+            icon: const Icon(
+                    Icons.attach_file,
                     size: 35, // Размер иконки
                     color: Colors.grey, // Цвет иконки
                   )
-                : Icon(
-                    Icons.mic_outlined, // В противном случае показываем иконку микрофона
-                    size: 35, // Размер иконки
-                    color: Colors.grey, // Цвет иконки
-                  ),
           ),
         ),
 
