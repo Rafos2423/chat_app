@@ -15,7 +15,7 @@ class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Функция для отправки сообщения
-  Future<void> sendMessage(String receiverId, String messageTxt) async {
+  Future<void> sendMessage(String receiverId, String messageTxt, bool isImage) async {
     // Получаем информацию о текущем аутентифицированном пользователе
     final String currentUserId = _firebaseAuth.currentUser!.uid;
     final String currentUserEmail = _firebaseAuth.currentUser!.email.toString();
@@ -28,7 +28,8 @@ class ChatService extends ChangeNotifier {
         senderEmail: currentUserEmail,
         receiverId: receiverId,
         message: messageTxt,
-        timestamp: timestamp, 
+        timestamp: timestamp,
+        isImage: isImage,
         reactions: ["\u{1F604}", "\u{1F601}", "\u{1F602}", "\u{1F607}"]);
 
     // Формируем уникальный ID для чат-комнаты, используя ID текущего и получающего пользователя

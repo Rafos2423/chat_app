@@ -1,5 +1,5 @@
-import 'package:chatmessengerapp/components/chat_bubble.dart'; // Подключение виджета пузыря чата
-import 'package:chatmessengerapp/services/chat/chat_service.dart'; // Подключение сервиса чата
+import 'package:chat/services/chat/chat_service.dart';
+import 'package:chat/components/chat_bubble.dart'; // Подключение виджета пузыря чата
 import 'package:cloud_firestore/cloud_firestore.dart'; // Подключение Firestore для работы с базой данных в режиме реального времени
 import 'package:firebase_auth/firebase_auth.dart'; // Подключение Firebase Auth для аутентификации пользователей
 import 'package:flutter/material.dart';
@@ -27,8 +27,6 @@ class _ChatPageState extends State<ChatPage> { // Класс состояния 
   final ChatService _chatService = ChatService(); // Экземпляр сервиса чата для отправки и получения сообщений
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance; // Экземпляр для работы с аутентификацией Firebase
   final FirebaseStorage storage = FirebaseStorage.instance;
-  bool _isRecordingAudio = false; // Флаг для проверки, идет ли запись аудио
-  bool _isSendingVideo = false; // Флаг для проверки, отправляется ли видео
 
   Map<String, dynamic>? _selectedMessageData; // Переменная для хранения данных выбранного сообщения
   bool _showReactionsMenu = false; // Переменная для контроля отображения меню с реакциями
@@ -38,24 +36,25 @@ class _ChatPageState extends State<ChatPage> { // Класс состояния 
   void sendMessage() async { // Метод для отправки сообщения
     if (_messageController.text.isNotEmpty) { // Проверка, не пусто ли текстовое поле
       await _chatService.sendMessage(
-          widget.reciveUserID, _messageController.text); // Отправка сообщения через chatService
+          widget.reciveUserID, _messageController.text, false); // Отправка сообщения через chatService
       _messageController.clear(); // Очистка текстового поля после отправки сообщения
     }
   }
 
   void sendImageMessage() async
   {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
     File file = File(image.path);
     String fileName =
         'images/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
     Reference ref = storage.ref().child(fileName);
+
     UploadTask uploadTask = ref.putFile(file);
     await uploadTask;
     String imageUrl = await ref.getDownloadURL();
-    await _chatService.sendMessage(widget.reciveUserID, imageUrl);
+    await _chatService.sendMessage(widget.reciveUserID, imageUrl, true);
     _messageController.clear();
   }
  
@@ -99,8 +98,6 @@ class _ChatPageState extends State<ChatPage> { // Класс состояния 
     );
   }
 
-
-// Строим элемент сообщения
 Widget _buildMessageItem(DocumentSnapshot document) {
   // Преобразуем данные документа в мапу (словарь)
   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -109,7 +106,6 @@ Widget _buildMessageItem(DocumentSnapshot document) {
 
   // Проверяем, ассоциирована ли с этим сообщением реакция в виде эмодзи
   String? selectedEmoji = _selectedEmojis[messageId];
-
   // Возвращаем GestureDetector, чтобы иметь возможность обработать нажатие
   return GestureDetector(
     onTap: () {
@@ -142,7 +138,10 @@ Widget _buildMessageItem(DocumentSnapshot document) {
           // Вставляем небольшой отступ между элементами
           const SizedBox(height: 5,),
           // Создаем пузырек для сообщения
-          ChatBubble(message: data['message']),
+          data["isImage"].toString() ==  "true" ? Image.network(
+                data["message"],
+                width: 200,
+              ) : ChatBubble(message: data['message']),
           // Еще один отступ
           const SizedBox(height: 5,),
           // Если выбрано эмодзи, отображаем его
@@ -175,6 +174,7 @@ Widget _buildMessageItem(DocumentSnapshot document) {
     ),
   );
 }
+
 
 
 

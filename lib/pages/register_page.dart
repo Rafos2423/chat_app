@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
-import 'package:chatmessengerapp/services/auth/auth_service.dart'; // Подключение библиотеки сервиса аутентификации
+import 'package:chat/services/auth/auth_service.dart'; // Подключение библиотеки сервиса аутентификации
 import 'package:flutter/material.dart'; // Подключение основной библиотеки Flutter для разработки интерфейса
 import 'package:provider/provider.dart'; // Подключение библиотеки Provider для управления состоянием приложения
 

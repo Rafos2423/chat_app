@@ -8,6 +8,7 @@ class Message { // Объявление класса Message для модели
   final Timestamp timestamp; // Временная метка отправки сообщения
   List<String> reactions; // Список реакций на сообщение (например, эмодзи)
   final String? audioUrl; // URL аудиосообщения (может быть null)
+  final bool isImage;
   
   // Конструктор класса для инициализации объекта Message
   Message({
@@ -16,6 +17,7 @@ class Message { // Объявление класса Message для модели
     required this.receiverId, // Требуется ID получателя
     required this.message, // Требуется текст сообщения
     required this.timestamp, // Требуется временная метка
+    required this.isImage,
     this.audioUrl, // URL аудиосообщения, необязательный параметр
     List<String>? reactions, // Список реакций, необязательный параметр
   }) : reactions = reactions ?? ["\u{1F604}", "\u{1F601}"]; // Инициализация списка реакций значениями по умолчанию, если не указаны
@@ -30,6 +32,7 @@ class Message { // Объявление класса Message для модели
       'message': message, // Поле message добавляется в map
       'timestamp': timestamp, // Поле timestamp добавляется в map
       'reactions': reactions, // Поле reactions добавляется в map
+      'isImage': isImage,
       // Если поле audioUrl определено (не null), оно также будет добавлено в map
       if (audioUrl != null) 'audioUrl': audioUrl, 
     };

@@ -1,6 +1,6 @@
-import 'package:chatmessengerapp/firebase_options.dart'; // Импортируем конфигурации Firebase.
-import 'package:chatmessengerapp/services/auth/auth_gate.dart'; // Импортируем AuthGate, который будет управлять потоком аутентификации.
-import 'package:chatmessengerapp/services/auth/auth_service.dart'; // Импортируем AuthService для функционала аутентификации.
+import 'package:chat/firebase_options.dart'; // Импортируем конфигурации Firebase.
+import 'package:chat/services/auth/auth_gate.dart'; // Импортируем AuthGate, который будет управлять потоком аутентификации.
+import 'package:chat/services/auth/auth_service.dart'; // Импортируем AuthService для функционала аутентификации.
 import 'package:firebase_core/firebase_core.dart'; // Импортируем основной пакет Firebase.
 import 'package:flutter/material.dart'; // Импортируем Material Design пакет для Flutter.
 import 'package:provider/provider.dart'; // Импортируем библиотеку Provider для управления состоянием.

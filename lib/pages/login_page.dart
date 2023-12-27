@@ -1,8 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 // Импортируем необходимые пакеты
-import 'package:chatmessengerapp/components/my_button.dart'; // Пользовательский виджет кнопки
-import 'package:chatmessengerapp/components/my_text_field.dart'; // Пользовательский виджет текстового поля
+import 'package:chat/components/my_button.dart'; // Пользовательский виджет кнопки
+import 'package:chat/components/my_text_field.dart'; // Пользовательский виджет текстового поля
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // Основной пакет виджетов и стилей Flutter
 import 'package:google_sign_in/google_sign_in.dart';
