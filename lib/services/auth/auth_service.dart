@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart'; // Подключение библиотеки Firebase Firestore.
 import 'package:firebase_auth/firebase_auth.dart'; // Подключение библиотеки Firebase Auth.
 import 'package:flutter/foundation.dart'; // Подключение библиотеки Flutter, содержащей основные функции.
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 // Класс AuthService для работы с аутентификацией.
 class AuthService extends ChangeNotifier {
@@ -10,6 +12,15 @@ class AuthService extends ChangeNotifier {
   // Создается экземпляр FirebaseFirestore для работы с базой данных Firestore.
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<Iterable<MapEntry<String, dynamic>>> _getLocation() async {
+    Position position = await Geolocator.getCurrentPosition();
+
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    return placemarks[0].toJson().entries;
+  }
+
   // Функция для входа пользователя через email и пароль.
   Future<UserCredential> signInWithEmailandPassword(
       String email, String password) async {
@@ -17,7 +28,6 @@ class AuthService extends ChangeNotifier {
       // Аутентификация пользователя с использованием email и пароля.
       UserCredential userCredential = await _firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
-
       // Если пользователь вошел в систему, то в коллекции 'users' в Firestore создается документ для пользователя,
       // если документ не существует. Данные объединяются с существующими (если таковые есть).
       _firestore.collection('users').doc(userCredential.user!.uid).set({
@@ -65,13 +75,18 @@ class AuthService extends ChangeNotifier {
 
       // Если пользователь вошел в систему, то в коллекции 'users' в Firestore создается документ для пользователя,
       // если документ не существует. Данные объединяются с существующими (если таковые есть).
+
+      var geo = await _getLocation();
+      Map<String, dynamic> data = {
+        'uid': userCredential.user!.uid,
+        'email': userCredential.user!.email
+      };
+      geo.forEach((e) => data[e.key] = e.value);
+
       FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
-          .set({
-        'uid': userCredential.user!.uid,
-        'email': userCredential.user!.email,
-      }, SetOptions(merge: true));
+          .set(data, SetOptions(merge: true));
 
       // Возвращается объект с данными о пользовательской учетной записи.
       return userCredential;
